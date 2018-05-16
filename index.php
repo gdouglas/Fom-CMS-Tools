@@ -2,9 +2,9 @@
 /**
  * This file gets the resolved name of urls. It was done to help sort out what sites
  * are on UBC CMS
- * 
+ *
  * PHP version 5
- * 
+ *
  * @category UBC_CMS_Tools
  * @package  FOM_CMS_Tools
  * @author   Graham Douglas <graham.douglas@ubc.com>
@@ -228,52 +228,58 @@ $urls = array(
 );
 
 
-echo '<table><thead><tr><td>Index</td><td>Source</td><td>Resolves As
-</td></tr></thead><tbody>';
-
-$index = 0;
-$ch    = curl_init();
-ignore_user_abort(true);
-set_time_limit(0);
-
-ob_start();
-// do initial processing here
-echo $response; // send the response
-header('Connection: close');
-header('Content-Length: '.ob_get_length());
-ob_end_flush();
-ob_flush();
-flush();
+echo '<table><thead><tr><td>Index</td><td>Source</td><td>Resolves As'
+.'</td></tr></thead><tbody>';
+getUrls($urls);
 
 /**
- * Does something interesting
+ * Gets the domain for each site in this list and passes them to addRow()
  *
- * @param array $urls gets the domain for each site in this list
- * 
- * @throws Some_Exception_Class If something interesting cannot happen
+ * @param array $sites a list of urls
+ *
  * @return Status
- */ 
-function getUrls($urls)
+ */
+function getUrls($sites)
 {
-    foreach ( $sites as $site ) {
+    $index = 0;
+    foreach ($sites as $site) {
         $index ++;
-        curl_setopt($ch, CURLOPT_URL, $url);
+        $ch    = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $site);
         curl_setopt($ch, CURLOPT_HEADER, true);
         // Must be set to true so that PHP follows any "Location:" header.
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true); 
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $a = curl_exec($ch); // $a will contain all headers
         // This is what you need, it will return you the last effective URL.
-        $final_url = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL); 
-        /*
-        Uncomment to see all headers
-        echo "<pre>";
+        $final_url = curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
+        
+        // Uncomment to see all headers
+        /* echo "<pre>";
         print_r($a);echo"<br>";
-        echo "</pre>";
-        */
-        echo '<tr><td>' . filter_var($index, FILTER_SANITIZE_NUMBER_INT).'</td><td>'
-        .filter_var($url, FILTER_SANITIZE_URL) . '</td><td>'
+        echo "</pre>"; */
+       
+        $row = '<tr><td>' . filter_var($index, FILTER_SANITIZE_NUMBER_INT)
+        .'</td><td>'.filter_var($site, FILTER_SANITIZE_URL) . '</td><td>'
         .filter_var($final_url, FILTER_SANITIZE_URL).'</td></tr>';
+        // echo $row;
+        addRow($row);
     }
+}
+/**
+ * Add Row to table
+ *
+ * @param string $row content for the table
+ *
+ * @return void
+ */
+function addRow($row)
+{
+    // ob_start();
+    // do initial processing here
+    static $rows = [];
+    array_push($rows, $row);
+    print_r($rows); // send the response
+
 }
 echo '</tbody></table>';
